@@ -25,13 +25,11 @@ gggggg
 gg  gg
 gg  gg
 `,`
-  rr
- rrrr
- rrrr
-rrrrrr
-rr  rr
-yy  yy
-yy  yy
+ RRRR
+R RR R
+RRRRRR
+RR  RR
+RR  RR
 `,
 ];
 
@@ -43,19 +41,22 @@ const gamesize = {
 options = {
   viewSize: {x:gamesize.WIDTH, y:gamesize.HEIGHT},
   seed: 1,
-  isPlayingBgm: true
+  isPlayingBgm: true,
+  theme: "pixel"
 
 };
 
 let player;
 let aliens;
 let friendly;
+let movingRight = true;
 let alienSpeed;
 let friendlySpeed;
 let backgroundParticles;
 
 function update() {
   if (!ticks) {
+    // initialize background particles
     backgroundParticles = times(25,() => {
       const posX = rnd(0,gamesize.WIDTH);
       const posY = rnd(0,gamesize.HEIGHT);
@@ -65,6 +66,7 @@ function update() {
       };
     });
     
+    // initialize player
     player = {
       pos: vec(25, gamesize.HEIGHT * 0.9)
     };
@@ -74,6 +76,7 @@ function update() {
     alienSpeed = 2;
   }
 
+  // spawn background particles
   backgroundParticles.forEach((bp) => {
     bp.pos.y += bp.speed;
     if(bp.pos.y > gamesize.HEIGHT){
@@ -83,8 +86,9 @@ function update() {
     box(bp.pos,1);
   });
 
+  // spawn aliens
   if(aliens.length === 0){
-    //alienSpeed = 2;
+
     const rows = [25,50,75,100];
     for(let i=0; i < 8; i++){
       randLane = Math.floor(Math.random() * rows.length);
@@ -95,6 +99,7 @@ function update() {
     }
   }
 
+  // spawn friendlies
   if(friendly.length === 0){
     
     const rows = [25,50,75,100];
@@ -107,19 +112,31 @@ function update() {
     }
   }
 
-  
+  // move left/right on button press
   if(input.isJustPressed){
-    if(player.pos.x + 25 < 125){
-      player.pos.x = player.pos.x + 25;
-    }else{
-      player.pos.x = 25;
+    if(movingRight){
+      if(player.pos.x + 25 < 125){
+        player.pos.x = player.pos.x + 25;
+      }else{
+        movingRight = false;
+      }
     }
-   
+  
+    if(!movingRight){
+      if(player.pos.x - 25 > 0){
+        player.pos.x = player.pos.x - 25;
+      }else{
+        movingRight = true;
+        player.pos.x = player.pos.x + 25;
+      }
+    }
   }
   
+  // spawn player
   color("black");
   char("a",player.pos);
   
+  // collision of aliens and player
   remove(aliens, (e) => {
     e.pos.y += alienSpeed;
     color("green");
@@ -136,6 +153,7 @@ function update() {
     return(alienCollide || e.pos.y > gamesize.HEIGHT);
   });
   
+  // collision of player and friendlies
   remove(friendly, (f) => {
     f.pos.y += friendlySpeed;
     color("red");
